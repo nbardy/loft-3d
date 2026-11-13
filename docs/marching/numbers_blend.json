@@ -1,0 +1,113 @@
+{
+ "reachOverK": 0.5,
+ "coarse": {
+  "vertices": 96,
+  "pushed": 19,
+  "buried": 12,
+  "evaluationsPerVertex": 1.93,
+  "worstNewtonSteps": 3,
+  "farthestPush": 25.12,
+  "blendRadius": 60,
+  "contourToOutlinesBefore": 15.34,
+  "contourToOutlinesAfter": 0.54,
+  "edgeOutsideSolid": 0.35
+ },
+ "fine": {
+  "vertices": 384,
+  "pushed": 81,
+  "buried": 49,
+  "evaluationsPerVertex": 1.95,
+  "worstNewtonSteps": 3,
+  "farthestPush": 29.3,
+  "blendRadius": 60,
+  "contourToOutlinesBefore": 14.97,
+  "contourToOutlinesAfter": 0.03,
+  "edgeOutsideSolid": 0.03
+ },
+ "sweep": [
+  {
+   "reachOverK": 0.25,
+   "vertices": 96,
+   "contourToOutlines": 2.46,
+   "edgeOutsideSolid": 0.25,
+   "evaluationsPerVertex": 1.78
+  },
+  {
+   "reachOverK": 0.25,
+   "vertices": 192,
+   "contourToOutlines": 0.85,
+   "edgeOutsideSolid": 0.06,
+   "evaluationsPerVertex": 1.78
+  },
+  {
+   "reachOverK": 0.25,
+   "vertices": 384,
+   "contourToOutlines": 0.39,
+   "edgeOutsideSolid": 0.02,
+   "evaluationsPerVertex": 1.77
+  },
+  {
+   "reachOverK": 0.25,
+   "vertices": 768,
+   "contourToOutlines": 0.3,
+   "edgeOutsideSolid": 0.01,
+   "evaluationsPerVertex": 1.78
+  },
+  {
+   "reachOverK": 0.5,
+   "vertices": 96,
+   "contourToOutlines": 0.54,
+   "edgeOutsideSolid": 0.35,
+   "evaluationsPerVertex": 1.93
+  },
+  {
+   "reachOverK": 0.5,
+   "vertices": 192,
+   "contourToOutlines": 0.14,
+   "edgeOutsideSolid": 0.13,
+   "evaluationsPerVertex": 1.94
+  },
+  {
+   "reachOverK": 0.5,
+   "vertices": 384,
+   "contourToOutlines": 0.03,
+   "edgeOutsideSolid": 0.03,
+   "evaluationsPerVertex": 1.95
+  },
+  {
+   "reachOverK": 0.5,
+   "vertices": 768,
+   "contourToOutlines": 0.01,
+   "edgeOutsideSolid": 0.01,
+   "evaluationsPerVertex": 1.96
+  },
+  {
+   "reachOverK": 1,
+   "vertices": 96,
+   "contourToOutlines": 0.54,
+   "edgeOutsideSolid": 0.7,
+   "evaluationsPerVertex": 2.14
+  },
+  {
+   "reachOverK": 1,
+   "vertices": 192,
+   "contourToOutlines": 0.14,
+   "edgeOutsideSolid": 0.41,
+   "evaluationsPerVertex": 2.16
+  },
+  {
+   "reachOverK": 1,
+   "vertices": 384,
+   "contourToOutlines": 0.03,
+   "edgeOutsideSolid": 0.23,
+   "evaluationsPerVertex": 2.15
+  },
+  {
+   "reachOverK": 1,
+   "vertices": 768,
+   "contourToOutlines": 0.01,
+   "edgeOutsideSolid": 0.07,
+   "evaluationsPerVertex": 2.14
+  }
+ ]
+}

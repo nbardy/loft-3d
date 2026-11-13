@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marching and tracing</title>
+<style>
+  :root { --bg: #10151c; --panel: #161d27; --line: #263140; --ink: #e6edf3; --soft: #9aa7b4; --accent: #f2cc8f; --good: #7fb069; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; }
+  main { max-width: 1080px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 30px; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 21px; margin: 44px 0 10px; }
+  p, li { max-width: 74ch; }
+  .lede { color: var(--soft); margin: 0 0 20px; }
+  .answer { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--accent); padding: 14px 18px; border-radius: 6px; }
+  .answer li { margin: 6px 0; }
+  figure { margin: 16px 0; }
+  figure img { display: block; width: 100%; height: auto; border-radius: 6px; border: 1px solid var(--line); }
+  figcaption { color: var(--soft); font-size: 14px; margin-top: 6px; max-width: 74ch; }
+  .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+  .four { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+  .four figure { margin: 0; }
+  .four b { display: block; font-size: 14px; margin-bottom: 4px; }
+  .scale { display: flex; align-items: center; gap: 10px; color: var(--soft); font-size: 13px; margin: 12px 0 4px; }
+  .scale i { flex: 0 1 320px; height: 12px; border-radius: 3px; background: linear-gradient(90deg, rgb(10,14,22), rgb(38,70,160), rgb(60,170,170), rgb(240,215,90), rgb(230,80,50)); border: 1px solid var(--line); }
+  .wrap { overflow-x: auto; }
+  table { border-collapse: collapse; font-size: 14.5px; margin: 12px 0; min-width: 560px; }
+  th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--soft); font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tag { font-size: 12px; padding: 1px 7px; border-radius: 10px; border: 1px solid var(--line); color: var(--soft); white-space: nowrap; }
+  .tag.ok { color: var(--good); border-color: #3c5a34; }
+  a { color: #8ec5ff; }
+  code { background: var(--panel); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+  footer { color: var(--soft); font-size: 14px; margin-top: 48px; border-top: 1px solid var(--line); padding-top: 14px; }
+</style></head><body><main>
+
+<h1>Marching, tracing, and what to do instead</h1>
+<p class="lede">Every picture here is computed by <code>tools/explain_marching*.ts</code>. The counts are operations on the CPU for one small picture. They show where the work goes. They are not GPU milliseconds.</p>
+
+<div class="answer"><ul>
+  <li><b>Yes, work can be cached per region and shared.</b> It comes in three forms, and all three are published and fast: one coarse march per screen tile, a short list of the shapes that matter per cell of space, and distances stored in a grid.</li>
+  <li><b>Sharing a coarse march cut the work 3 times</b> on the tree below. All of that came from proving empty tiles empty. It saved nothing inside the branches.</li>
+  <li><b>Not marching cut it 44.7 times.</b> The same tree, listed as 5,461 branches and intersected exactly, needs 1.7 ray solves per pixel against 76 distance evaluations.</li>
+  <li><b>For a body with a skeleton, solve once per vertex.</b> 2.8 field evaluations per vertex find a blended surface, at any screen size.</li>
+</ul></div>
+
+<h2>1. Two ways to ask a ray where the surface is</h2>
+<div class="pair">
+  <figure><img src="fig1_sphere_tracing.svg" alt="Sphere tracing steps along two rays">
+    <figcaption><b>Marching.</b> The shape is a function that returns the distance to the nearest surface. The ray steps by that distance and asks again. It needs no formula for the hit, so it draws anything, including folded and blended shapes. A ray that passes close to a surface takes many small steps, and a ray that misses pays for the whole trip.</figcaption></figure>
+  <figure><img src="fig2_exact_intersection.svg" alt="Exact intersection of the same two rays">
+    <figcaption><b>Tracing.</b> Each shape has a closed formula for where a ray meets it. One solve per shape, hit or miss, with an exact edge. It needs a formula per shape, so blends and folds do not fit directly, and the cost grows with the number of shapes a ray is tested against.</figcaption></figure>
+</div>
+<p>Rasterising triangles is the third way: the surface is listed as triangles and the hardware finds which pixels each covers. It costs per triangle and per covered pixel, and it is what GPUs are built for.</p>
+
+<h2>2. Where the marching work goes</h2>
+<p>One tree: a single branch folded 6 times, so one call of its distance function evaluates 7 capsules and stands for 5,461 branches. Picture size 360x300; the tree covers 19.6% of it. Brighter means more work at that pixel, on one scale for all three cost pictures.</p>
+<div class="four">
+  <figure><b>The picture</b><img src="fig5a_shaded.webp" alt="The folded tree, shaded"></figure>
+  <figure><b>A. Every pixel marches alone</b><img src="fig5b_march.webp" alt="Cost per pixel when marching"></figure>
+  <figure><b>B. Tiles share one coarse march</b><img src="fig5c_shared.webp" alt="Cost per pixel with a shared coarse march"></figure>
+  <figure><b>C. Branches listed, intersected exactly</b><img src="fig5d_list.webp" alt="Cost per pixel when the branches are listed"></figure>
+</div>
+<div class="scale"><span>0</span><i></i><span>240 operations per pixel</span></div>
+<div class="wrap"><table>
+  <tr><th>Way of drawing</th><th class="num">Operations</th><th class="num">Per pixel</th><th class="num">Times fewer than A</th><th class="num">Pixels that differ from A</th></tr>
+  <tr><td>A. March every pixel</td><td class="num">8,212,834</td><td class="num">76</td><td class="num">1</td><td class="num">0</td></tr>
+  <tr><td>B. One coarse march per 8×8 tile, then march</td><td class="num">2,701,405</td><td class="num">25</td><td class="num">3</td><td class="num">17</td></tr>
+  <tr><td>C. List the branches, solve each exactly</td><td class="num">183,842</td><td class="num">1.7</td><td class="num">44.7</td><td class="num">172</td></tr>
+</table></div>
+<ul>
+  <li><b>75.5% of the marching work is spent on rays that miss.</b> They take 10.2 steps each on the way past. The glow around the tree in picture A is that waste.</li>
+  <li><b>The shared coarse march removes that waste and nothing else.</b> It proved 1,279 of 1,710 tiles empty. Inside the tree the cost is unchanged, because a ray threading between twigs is never far from one.</li>
+  <li><b>Inside the outline, the list is about 11 times cheaper.</b> A marched hit takes 13.5 steps of 7 capsules; a listed pixel tests the few branches that cover it.</li>
+  <li>An operation in A and B is one capsule distance. In C it is one ray-against-capsule solve, which is roughly two to three times the arithmetic (my estimate, not measured).</li>
+  <li>C differs from A in 172 of 108,000 pixels. A folded copy is cut off where it crosses a mirror plane; a listed copy is not.</li>
+</ul>
+
+<h2>3. Sharing work per region</h2>
+<figure><img src="fig3_regions.svg" alt="Cells labelled with the shapes that can be nearest inside them">
+  <figcaption>Each cell keeps a shape only if it can be the nearest one somewhere inside the cell. A shape is dropped when its distance at the cell's centre exceeds the nearest shape's by more than the cell's diameter. This is the rule in Lipschitz Pruning (Barbier and others, Eurographics 2025); a smooth blend adds its blend radius to the margin.</figcaption></figure>
+<div class="wrap"><table>
+  <tr><th>What is cached per region</th><th>Removes</th><th>Published result</th><th></th></tr>
+  <tr><td>One coarse march per screen tile, shared by its pixels</td><td>The empty lead-in before an object</td><td>Picture B here: 3 times. Polychronakis and others (2023) claim up to 20.4 times in a headset with foveation</td><td><span class="tag ok">B measured here</span></td></tr>
+  <tr><td>The shapes that matter, per screen tile</td><td>Most of the cost of each evaluation</td><td>Zanni (2023): 142 blended shapes, 57.8 ms down to 7.3 ms at 1720×1376 on an RTX 2080, against per-pixel lists</td><td><span class="tag ok">read in the paper</span></td></tr>
+  <tr><td>The shapes that matter, per cell of space</td><td>Most of the cost of each evaluation</td><td>Barbier and others (2025): about 1 shape left per cell on average. A 43-shape character at 1080p on a laptop RTX 4060: 1.0 ms to prune and 2.8 ms to trace, 8 times faster than without. A 1,989-shape crowd: 5.5 ms and 8.4 ms, 227 times faster</td><td><span class="tag ok">read in the authors' slides</span></td></tr>
+  <tr><td>Distances stored in a grid of bricks</td><td>The whole evaluation (one texture read)</td><td>Used in Unreal's Lumen and in Claybook (from memory, not rechecked). No timing checked</td><td><span class="tag">not checked</span></td></tr>
+</table></div>
+<p>So the best published marching of a blended character costs about 4 ms for a full 1080p frame on a laptop RTX 4060, with one shadow ray. The cost falls with the pixels an object covers, so a small object costs a fraction of that. Pruning is paid again every frame, and integrated graphics is slower. Whether this fits under 1 ms per object on our machines is not known.</p>
+
+<h2>4. Solve once per vertex</h2>
+<figure><img src="fig4_skeleton_rays.svg" alt="Rays from a spine meeting a blended body">
+  <figcaption>The body is a smooth blend of 9 circles, the kind of shape marching is used for. Each vertex is found along a ray from the spine by Newton's method, started from its neighbour's answer: 46 vertices, 128 evaluations, 2.8 per vertex, at most 2 steps. The triangles between vertices are then ordinary geometry. The cost does not depend on how many pixels the body covers, and the answer can be stored once if the shape does not change in its own coordinates.</figcaption></figure>
+
+<h2>5. A blend with each part's own triangles</h2>
+<figure><img src="fig6_push_to_blend.svg" alt="A disc and a capsule, each outline pushed onto the blended surface">
+  <figcaption>Two parts keep their own outlines (dashed, as authored). Each vertex is pushed along its own normal until it lies on the smooth union of the two distance fields. The outlines still overlap inside; their union is the blended shape. Nothing is stitched or re-meshed, and each vertex needs only its own position: 1.93 evaluations per vertex here, at most 3 Newton steps.</figcaption></figure>
+<div class="wrap"><table>
+  <tr><th>How far a vertex may be pushed</th><th class="num">96 vertices</th><th class="num">192</th><th class="num">384</th><th class="num">768</th></tr>
+  <tr><td>A quarter of the blend radius</td><td class="num">2.46</td><td class="num">0.85</td><td class="num">0.39</td><td class="num">0.30</td></tr>
+  <tr><td>Half the blend radius</td><td class="num">0.54</td><td class="num">0.14</td><td class="num">0.03</td><td class="num">0.01</td></tr>
+</table></div>
+<p>The numbers are the largest distance, in pixels, from the true blended contour to the pushed outlines. With a quarter of the radius the outlines stop at the seam and the error stalls. With half, each runs on past the seam and the error falls four times per doubling. Before the push it is 15.34 px. This is a 2D test of two convex parts; nothing is built in 3D. After the push, displacement and twists are ordinary moves of vertices, which triangles do for free.</p>
+
+<h2>6. Four ways Loft can draw a field</h2>
+<div class="wrap"><table>
+  <tr><th>Schedule</th><th>For</th><th>Cost grows with</th><th>Status</th></tr>
+  <tr><td><b>Solve onto the body</b>: one root per vertex along the body's own rays</td><td>Blended bodies with a skeleton</td><td>Vertices</td><td>Counted in 2D here; not built</td></tr>
+  <tr><td><b>Unfold</b>: list the copies a fold makes and intersect each exactly</td><td>Finite folds of simple parts: coral, trees, rows of spines</td><td>Copies on screen</td><td>Built. The coral: 1.3 to 1.5 ms of GPU time against 4.9 to 6.8 ms marched</td></tr>
+  <tr><td><b>March inside each part's own hull</b>, with only its blend neighbours</td><td>Blends with holes or overhangs</td><td>Covered pixels × a short march</td><td>Derived, with a proof that needs an exactly local blend; not tested</td></tr>
+  <tr><td><b>March a cached grid</b>, starting from a shared coarse pass</td><td>True fractals, endless repeats, warped rock</td><td>Covered pixels × steps</td><td>Bricks built. The coral: 4.9 to 6.8 ms against 12.6 to 16.4 ms before. The shared coarse pass is not built</td></tr>
+</table></div>
+<p>The reasoning, the sources and what is not known are in <a href="../tracing_sota.md"><code>docs/tracing_sota.md</code></a>.</p>
+
+<h2>Pictures elsewhere worth seeing</h2>
+<ul>
+  <li><a href="https://origami.projet.liris.cnrs.fr/topics/gdl/gdl_talk_59/LipschitzPruning.pdf">Lipschitz Pruning, the authors' slides</a>: the per-cell pruned trees, the pruning-ratio pictures and the results table quoted above.</li>
+  <li><a href="https://www.mattkeeter.com/research/mpr/">Keeter, Massively Parallel Rendering of Complex Closed-Form Implicit Surfaces</a>: tiles classified as empty, full or undecided.</li>
+  <li><a href="https://www.mattkeeter.com/blog/2025-05-14-gradients/">Keeter, Gradients are the new intervals</a>: one centre sample in place of interval arithmetic.</li>
+  <li><a href="https://arxiv.org/abs/2304.09673">Zanni, Synchronized-tracing of implicit surfaces</a>: per-tile lists for blended shapes.</li>
+  <li><a href="https://iquilezles.org/articles/raymarchingdf/">Quilez, raymarching distance fields</a> and <a href="https://iquilezles.org/articles/intersectors/">intersectors</a>: the two halves of section 1.</li>
+</ul>
+
+<footer>Regenerate with <code>bun tools/explain_marching_page.ts</code>. Counts are from a CPU model of one 360x300 picture.</footer>
+</main></body></html>

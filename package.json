@@ -1,0 +1,29 @@
+{
+  "name": "loft",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "Loft: 3D bodies as coordinate systems, authored as code, compiled to WGSL + tables for any WebGPU host.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./core": "./src/core.ts",
+    "./shapes": "./src/shapes.ts",
+    "./motion": "./src/motion.ts",
+    "./actions": "./src/actions.ts",
+    "./checks": "./src/checks.ts",
+    "./styles": "./src/styles.ts"
+  },
+  "scripts": {
+    "test": "bun test --timeout 120000",
+    "typecheck": "tsc --noEmit",
+    "loft": "bun src/cli/main.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4",
+    "@webgpu/types": "^0.1.74",
+    "bun-webgpu": "0.1.7",
+    "playwright": "^1.65.0",
+    "typescript": "^7.0.2"
+  }
+}

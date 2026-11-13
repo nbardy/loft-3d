@@ -1,0 +1,2 @@
+patchedDependencies:
+  bun-webgpu@0.1.7: patches/bun-webgpu@0.1.7.patch

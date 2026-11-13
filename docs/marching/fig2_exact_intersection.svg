@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 366" font-family="-apple-system, Helvetica, Arial, sans-serif">
+<rect width="680" height="366" fill="#141a22"/>
+<text x="14" y="22" fill="#e6edf3" font-size="16" font-weight="600">Ray tracing (exact intersection): solve once per shape, no steps</text>
+<defs><clipPath id="view"><rect width="680" height="320"/></clipPath></defs>
+<g transform="translate(0 30)" clip-path="url(#view)"><rect width="680" height="320" fill="#0d1218"/><g fill="#e07a5f" stroke="#e07a5f" opacity="0.9"><circle cx="250" cy="95" r="52"/></g><g fill="#3d7ea6" stroke="#3d7ea6" opacity="0.9"><line x1="330" y1="245" x2="470" y2="205" stroke-width="60" stroke-linecap="round"/></g><g fill="#7fb069" stroke="#7fb069" opacity="0.9"><circle cx="560" cy="100" r="44"/></g><circle cx="28" cy="170" r="5" fill="#fff"/><text x="22" y="192" fill="#9aa7b4" font-size="11">eye</text><line x1="28" y1="170" x2="345.7" y2="209.3" stroke="#f2cc8f" stroke-width="1.4"/><circle cx="345.7" cy="209.3" r="5" fill="none" stroke="#fff" stroke-width="1.6"/><line x1="28" y1="170" x2="747.8" y2="152.7" stroke="#c9b6e4" stroke-width="1.4"/></g>
+<text x="14" y="361" fill="#9aa7b4" font-size="13.5">each ray: 3 solves, one per shape, whether it hits or misses</text></svg>

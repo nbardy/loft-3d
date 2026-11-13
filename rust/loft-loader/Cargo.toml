@@ -1,0 +1,24 @@
+[package]
+name = "loft-loader"
+version = "0.1.0"
+edition = "2021"
+description = "Loads a Loft artefact folder (docs/artefact_format.md) onto a wgpu device and draws its frames."
+publish = false
+
+# wgpu 30: the version the game client pins, so the loader can be handed the game's own Device.
+[dependencies]
+wgpu = { version = "30.0.1", default-features = false, features = ["std", "parking_lot", "metal", "vulkan", "dx12", "wgsl"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+
+# pollster: blocking on error scopes at load (and the binary's device). png: the binary only.
+pollster = "0.4"
+png = "0.18"
+
+[[bin]]
+name = "loft-view"
+path = "src/bin/loft-view.rs"
+
+[profile.release]
+debug = false

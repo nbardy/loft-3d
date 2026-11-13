@@ -1,0 +1,36 @@
+{
+ "note": "CPU operation counts for one 360x300 picture of one folded tree. Not GPU time.",
+ "image": "360x300",
+ "levels": 6,
+ "branches": 5461,
+ "heatScaleMax": 240,
+ "pixels": 108000,
+ "hitPixels": 21206,
+ "coverage": "19.6% of pixels hit the tree",
+ "A_march": {
+  "capsuleEvaluations": 8212834,
+  "onHitPixels": 2009448,
+  "perPixel": 76,
+  "stepsOnHits": 13.5,
+  "stepsOnMisses": 10.2,
+  "shareSpentOnMisses": "75.5%"
+ },
+ "B_sharedCoarseMarch": {
+  "tilePx": 8,
+  "tiles": 1710,
+  "tilesProvenEmpty": 1279,
+  "coarse": 116466,
+  "fine": 2584939,
+  "capsuleEvaluations": 2701405,
+  "perPixel": 25,
+  "pixelsThatDifferFromA": 17,
+  "timesFewerThanA": 3
+ },
+ "C_listAll": {
+  "branchesDrawn": 5461,
+  "raySolves": 183842,
+  "perPixel": 1.7,
+  "pixelsThatDifferFromA": 172,
+  "timesFewerThanA": 44.7
+ }
+}

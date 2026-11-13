@@ -1,0 +1,9 @@
+{
+ "skeletonRays": {
+  "vertices": 46,
+  "evaluations": 128,
+  "perVertex": 2.8,
+  "worstNewtonSteps": 2,
+  "tolerancePx": 0.25
+ }
+}

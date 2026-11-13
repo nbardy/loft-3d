@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loft</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main id="stage">
+  <canvas id="view"></canvas>
+  <div id="errors">
+    <pre id="buildError" hidden></pre>
+    <pre id="error" hidden></pre>
+  </div>
+  <button id="panelToggle" type="button" title="show or hide the panel (p)" aria-label="toggle panel">&#9776;</button>
+</main>
+<footer id="timebar">
+  <button id="play" type="button" title="space">pause</button>
+  <input id="time" type="range" min="0" max="20" step="0.01" value="0" aria-label="time">
+  <span id="timeText">0.00 s</span>
+  <label>speed <select id="speed"><option>0.25</option><option>0.5</option><option selected>1</option><option>2</option></select></label>
+</footer>
+<aside id="panel">
+  <div id="readout"></div>
+  <div class="row" id="cameras"></div>
+  <label class="row">style <select id="style" aria-label="style"></select></label>
+  <label class="row"><input type="checkbox" id="construction"> construction <kbd>c</kbd></label>
+  <div id="params"></div>
+  <div class="row">
+    <button id="reset" type="button">reset values</button>
+    <button id="copy" type="button" title="copy the changed values as JSON">copy values</button>
+  </div>
+  <div id="hint">space play &middot; arrows step time &middot; r camera &middot; c construction &middot; p panel &middot; double-click a slider to reset it</div>
+</aside>
+<script src="/live.js"></script>
+<script type="module" src="/app.js"></script>
+</body>
+</html>

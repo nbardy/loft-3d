@@ -1,0 +1,110 @@
+diff --git a/index.js b/index.js
+index 1c5a78e4658eb86613c00a12b5fe80d734bcc5f1..48bc8b52047ba39c1459998f7168057150f9f1ff 100644
+--- a/index.js
++++ b/index.js
+@@ -1349,7 +1349,7 @@ function allocStruct(structDef, options) {
+       }
+       const subBuffer = new ArrayBuffer(length * arrayMeta.elementSize);
+       subBuffers[arrayFieldName] = subBuffer;
+-      const pointer = length > 0 ? ptr(subBuffer) : null;
++      const pointer = length > 0 ? ptr(pinned(subBuffer)) : null;
+       pointerPacker(view, arrayMeta.arrayOffset, pointer);
+       arrayMeta.lengthPack(view, arrayMeta.lengthOffset, length);
+     }
+@@ -1455,6 +1455,24 @@ function packObjectArray(val) {
+   return bufferView;
+ }
+ var encoder = new TextEncoder;
++// Loft patch (loft docs/reliable_render.md): every buffer a struct packs a pointer to (a string, a nested struct, an
++// array) was referenced only by its address, so the collector could free it before the FFI call read it and give its
++// memory to the next allocation: Dawn then read another string (a vertex stage named "fs") or garbage WGSL. Each such
++// buffer, and each packed struct, is now kept here until the current macrotask ends. Every packer's FFI call is made
++// in the same synchronous stretch as its pack, and Dawn copies a descriptor during the call, so that is long enough.
++var pinnedBuffers = [];
++var pinsClearing = false;
++function pinned(buf) {
++  pinnedBuffers.push(buf);
++  if (!pinsClearing) {
++    pinsClearing = true;
++    setTimeout(() => {
++      pinnedBuffers = [];
++      pinsClearing = false;
++    }, 0);
++  }
++  return buf;
++}
+ function defineStruct(fields, structDefOptions) {
+   let offset = 0;
+   let maxAlign = 1;
+@@ -1479,7 +1497,7 @@ function defineStruct(fields, structDefOptions) {
+       size = pointerSize;
+       align = pointerSize;
+       pack = (view, off, val) => {
+-        const bufPtr = val ? ptr(encoder.encode(val + "\x00")) : null;
++        const bufPtr = val ? ptr(pinned(encoder.encode(val + "\x00"))) : null;
+         pointerPacker(view, off, bufPtr);
+       };
+       unpack = (view, off) => {
+@@ -1490,7 +1508,7 @@ function defineStruct(fields, structDefOptions) {
+       size = pointerSize;
+       align = pointerSize;
+       pack = (view, off, val) => {
+-        const bufPtr = val ? ptr(encoder.encode(val)) : null;
++        const bufPtr = val ? ptr(pinned(encoder.encode(val))) : null;
+         pointerPacker(view, off, bufPtr);
+       };
+       unpack = (view, off) => {
+@@ -1520,7 +1538,7 @@ function defineStruct(fields, structDefOptions) {
+             return;
+           }
+           const nestedBuf = typeOrStruct.pack(val, options2);
+-          pointerPacker(view, off, ptr(nestedBuf));
++          pointerPacker(view, off, ptr(pinned(nestedBuf)));
+         };
+         unpack = (view, off) => {
+           throw new Error("Not implemented yet");
+@@ -1572,7 +1590,7 @@ function defineStruct(fields, structDefOptions) {
+             const num = def.to(val[i]);
+             bufferView.setUint32(i * arrayElementSize, num, true);
+           }
+-          pointerPacker(view, off, ptr(buffer));
++          pointerPacker(view, off, ptr(pinned(buffer)));
+         };
+         unpack = null;
+         needsLengthOf = true;
+@@ -1589,7 +1607,7 @@ function defineStruct(fields, structDefOptions) {
+           for (let i = 0;i < val.length; i++) {
+             def.packInto(val[i], bufferView, i * arrayElementSize, options2);
+           }
+-          pointerPacker(view, off, ptr(buffer));
++          pointerPacker(view, off, ptr(pinned(buffer)));
+         };
+         unpack = (view, off) => {
+           throw new Error("Not implemented yet");
+@@ -1607,7 +1625,7 @@ function defineStruct(fields, structDefOptions) {
+           for (let i = 0;i < val.length; i++) {
+             primitivePack(bufferView, i * arrayElementSize, val[i]);
+           }
+-          pointerPacker(view, off, ptr(buffer));
++          pointerPacker(view, off, ptr(pinned(buffer)));
+         };
+         unpack = null;
+       } else if (isObjectPointerDef(def)) {
+@@ -1618,7 +1636,7 @@ function defineStruct(fields, structDefOptions) {
+             return;
+           }
+           const packedView = packObjectArray(val);
+-          pointerPacker(view, off, ptr(packedView.buffer));
++          pointerPacker(view, off, ptr(pinned(packedView.buffer)));
+         };
+         unpack = () => {
+           throw new Error("not implemented yet");
+@@ -1758,7 +1776,7 @@ function defineStruct(fields, structDefOptions) {
+         }
+         field.pack(view, field.offset, value, mappedObj, options);
+       }
+-      return view.buffer;
++      return pinned(view.buffer);
+     },
+     packInto(obj, view, offset2, options) {
+       let mappedObj = obj;
