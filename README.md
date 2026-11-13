@@ -1,9 +1,20 @@
 # Loft
 
-Loft describes animated 3D things as TypeScript and compiles the description to WGSL shaders plus tables of numbers
-that any WebGPU host can draw: a browser, bun headless, or a Rust game through `wgpu`. Shapes are functions, bodies are
-coordinate systems (so paint and parts move with them), and time is an argument (so motion is a closed form and any
-frame draws alone). The same expressions run on the CPU, where checks measure exactly what the GPU draws.
+**3D things written as functions, drawn by WebGPU, and measurable without drawing.**
+
+Loft exists for one job: animated, stylised 3D that is authored entirely in code, by a person or a model. There are no
+assets and no scene graph. A shape is a function, motion is a function of time, a look is a value you can swap, and
+the same description runs on the CPU, so a scene is checked ("does it land", "is the face in view") by arithmetic
+instead of by looking.
+
+- **One representation** for shape, motion and paint: an idea is written once, where the shape is written.
+- **Time is an argument**: any frame draws alone, and a fresh process gives the same pixels every time.
+- **Open at every level**: a function wherever a number goes; raw WGSL, your own drawable and your own host underneath.
+- **Made to be written by a model**: a refusal names the fix, and `loft context` says what an author needs in about
+  2,200 words.
+
+It is not a general engine: no mesh import, no physically based rendering, WebGPU only. If you have assets, use
+three.js ([how the two compare](docs/vs_threejs.md)). How it stays small and open: [docs/open_design.md](docs/open_design.md).
 
 ```ts run
 // examples/reed.ts
