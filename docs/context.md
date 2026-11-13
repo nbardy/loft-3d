@@ -14,7 +14,7 @@ surface's u and v run 0 to 1; paint is a function of them. Give every scene two 
 it, and the focus. `strand`, `spiralTube`, `sheetOn`, `ropes` and `impostors` return things: put them in `things`. `coil`, `fan`,
 `sheet`, `lathe`, `loft` and `extrude` return a bare surface: draw it first, `draw.surface(name, surface, { paint, grid })`.
 One sun lights bodies (no other lights on them); water can mirror what stands on it (`reflection`, a post pass), bodies
-mirror nothing; no simulation; meshes come out (`loft bake`), none go in. `loft` is `bun src/cli/main.ts`.
+mirror nothing; no simulation; meshes come out (the bake command writes glTF), none go in. `loft` is `bun src/cli/main.ts`.
 
 ```ts run
 // examples/reed.ts
