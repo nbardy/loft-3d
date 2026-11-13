@@ -4,7 +4,8 @@
 
 Loft exists for one job: animated, stylised 3D that is authored entirely in code, by a person or a model. There are no
 assets and no scene graph. A shape is a function, motion is a function of time, a look is a value you can swap, and
-the same description runs on the CPU, so a scene is checked ("does it land", "is the face in view") by arithmetic
+everything is drawn and animated on the GPU. The same description can also be evaluated on the CPU on demand, so a
+scene is checked ("does it land", "is the face in view") by arithmetic
 instead of by looking.
 
 - **One representation** for shape, motion and paint: an idea is written once, where the shape is written.

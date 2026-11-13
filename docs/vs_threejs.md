@@ -49,7 +49,7 @@ The difference is scope:
 |---|---|---|
 | Covers | what a material computes (colour, position offset, and compute passes) | shape, motion, paint, style, and the checks |
 | Lives in | slots of a material, inside three.js's scene graph | the whole description; there is no other layer |
-| Runs on | the GPU | the GPU to draw, and the CPU to measure: the same graph |
+| Runs on | the GPU | the GPU for every frame (drawing and motion); and, on demand, the CPU to measure: the same graph |
 | Geometry | comes from buffers made elsewhere | is a function |
 
 So the thing Loft competes with is not TSL alone but three.js as a whole for this one job. What Loft has that the
